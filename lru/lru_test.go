@@ -1,17 +1,25 @@
-package cache
+package lru
 
-import "testing"
+import (
+	"testing"
+)
+
+type String string
+
+func (s String) Len() int64 {
+	return int64(len([]byte(s)))
+}
 
 func TestSetAndGet(t *testing.T) {
-	cache := NewCache(0, nil)
-	cache.Set("name", "mkii")
+	m := NewLRUCache(0, nil)
+	m.Set("name", String("mkii"))
 
-	valueInterface, ok := cache.Get("name")
+	valueInterface, ok := m.Get("name")
 	if !ok {
 		t.Fatal("Failed to get a value by this key", "name")
 	}
 
-	value := valueInterface.(string)
+	value := valueInterface.(String)
 	if value != "mkii" {
 		t.Fatal("got a invalid value", value)
 	}
@@ -20,10 +28,10 @@ func TestSetAndGet(t *testing.T) {
 }
 
 func TestEnd(t *testing.T) {
-	cache := NewCache(0, nil)
-	cache.Set("name1", "mkii1")
-	cache.Set("name2", "mkii2")
-	cache.Set("name3", "mkii3")
+	cache := NewLRUCache(0, nil)
+	cache.Set("name1", String("mkii1"))
+	cache.Set("name2", String("mkii2"))
+	cache.Set("name3", String("mkii3"))
 
 	end := cache.GetEnd()
 	if end.(string) != "mkii1" {
@@ -41,4 +49,9 @@ func TestEnd(t *testing.T) {
 	}
 
 	t.Log(end2)
+}
+
+type User struct {
+	Name string
+	Age  int
 }
