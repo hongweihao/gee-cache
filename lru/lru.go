@@ -53,16 +53,15 @@ func (cache *Cache) Get(key string) (Value, bool) {
 
 // 设置（新增/更新）
 func (cache *Cache) Set(key string, value Value) {
-	var e *list.Element
-	var ok bool
 	var addByte int64
-	if e, ok = cache.m[key]; ok {
+	if e, ok := cache.m[key]; ok {
 		item := e.Value.(*entry)
 		addByte = value.Len() - item.value.Len()
 		cache.checkBytes(addByte)
 
 		item.value = value
 		e.Value = item
+		cache.list.MoveToFront(e)
 	} else {
 		// 没找到，新增
 		item := &entry{
@@ -71,11 +70,10 @@ func (cache *Cache) Set(key string, value Value) {
 		}
 		addByte = item.value.Len()
 		cache.checkBytes(addByte)
-		e.Value = item
+		front := cache.list.PushFront(item)
+		cache.m[key] = front
 	}
 
-	front := cache.list.PushFront(e)
-	cache.m[key] = front
 	cache.usedBytes += addByte
 }
 
@@ -86,7 +84,7 @@ func (cache *Cache) checkBytes(addByte int64) {
 	}
 
 	// 如果容量不足，把队尾的元素淘汰
-	for (cache.maxBytes - cache.usedBytes) < addByte {
+	for cache.maxBytes > 0 && (cache.maxBytes - cache.usedBytes) < addByte {
 		cache.weedOut()
 	}
 }
@@ -95,9 +93,12 @@ func (cache *Cache) checkBytes(addByte int64) {
 func (cache *Cache) weedOut() {
 	e := cache.list.Back()
 	item := e.Value.(*entry)
-
 	delete(cache.m, item.key)
+	cache.list.Remove(e)
 	cache.usedBytes -= item.value.Len()
+	if cache.callback != nil{
+		cache.callback(item.key, item.value)
+	}
 }
 
 // 删除
@@ -109,6 +110,9 @@ func (cache *Cache) Delete(key string) Value {
 	item := cache.list.Remove(e).(*entry)
 	delete(cache.m, key)
 	cache.usedBytes -= item.value.Len()
+	if cache.callback != nil{
+		cache.callback(item.key, item.value)
+	}
 	return item.value
 }
 
