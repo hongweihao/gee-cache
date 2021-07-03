@@ -1,6 +1,9 @@
 package lru
 
-import "container/list"
+import (
+	"container/list"
+	"log"
+)
 
 type (
 	Cache struct {
@@ -75,6 +78,7 @@ func (cache *Cache) Set(key string, value Value) {
 	}
 
 	cache.usedBytes += addByte
+	log.Printf("maxBytes: %v, usedBytes: %v\n", cache.maxBytes, cache.usedBytes)
 }
 
 // checkBytes 检查添加的容量，判断是否需要淘汰
@@ -84,7 +88,7 @@ func (cache *Cache) checkBytes(addByte int64) {
 	}
 
 	// 如果容量不足，把队尾的元素淘汰
-	for cache.maxBytes > 0 && (cache.maxBytes - cache.usedBytes) < addByte {
+	for cache.maxBytes > 0 && (cache.maxBytes-cache.usedBytes) < addByte {
 		cache.weedOut()
 	}
 }
@@ -96,7 +100,7 @@ func (cache *Cache) weedOut() {
 	delete(cache.m, item.key)
 	cache.list.Remove(e)
 	cache.usedBytes -= item.value.Len()
-	if cache.callback != nil{
+	if cache.callback != nil {
 		cache.callback(item.key, item.value)
 	}
 }
@@ -110,7 +114,7 @@ func (cache *Cache) Delete(key string) Value {
 	item := cache.list.Remove(e).(*entry)
 	delete(cache.m, key)
 	cache.usedBytes -= item.value.Len()
-	if cache.callback != nil{
+	if cache.callback != nil {
 		cache.callback(item.key, item.value)
 	}
 	return item.value
