@@ -2,6 +2,7 @@ package lru
 
 import (
 	"container/list"
+	"fmt"
 	"log"
 )
 
@@ -85,6 +86,10 @@ func (cache *Cache) Set(key string, value Value) {
 func (cache *Cache) checkBytes(addByte int64) {
 	if addByte <= 0 {
 		return
+	}
+
+	if addByte > cache.maxBytes {
+		panic(fmt.Sprintf("Over limit size. Need %v but max is %v", addByte, cache.maxBytes))
 	}
 
 	// 如果容量不足，把队尾的元素淘汰

@@ -23,5 +23,4 @@ func TestCache(t *testing.T) {
 	if byteView2, ok := cache.Get("k2"); ok {
 		t.Log(byteView2.String())
 	}
-
 }
