@@ -44,6 +44,9 @@ func NewLRUCache(maxBytes int64, callback func(string, Value)) *Cache {
 
 // 查找
 func (cache *Cache) Get(key string) (Value, bool) {
+	if cache == nil {
+		return nil, false
+	}
 	e, ok := cache.m[key]
 	if !ok {
 		return nil, false

@@ -3,12 +3,12 @@ package gee_cache
 import "sync"
 
 type Getter interface {
-	Get(key string) (ByteView, error)
+	Get(key string) ([]byte, error)
 }
 
-type GetterFunc func(key string) (ByteView, error)
+type GetterFunc func(key string) ([]byte, error)
 
-func (getFunc GetterFunc) Get(key string) (ByteView, error) {
+func (getFunc GetterFunc) Get(key string) ([]byte, error) {
 	return getFunc(key)
 }
 
@@ -60,6 +60,7 @@ func (group *Group) loadLocally(key string) (ByteView, error) {
 	if err != nil {
 		return ByteView{}, err
 	}
-	group.current.Set(key, v)
-	return v, nil
+	bv := ByteView{v}
+	group.current.Set(key, bv)
+	return bv, nil
 }
