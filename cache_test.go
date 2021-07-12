@@ -1,6 +1,8 @@
 package gee_cache
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestCache(t *testing.T) {
 	cache := NewCache(10)

@@ -7,12 +7,12 @@ import (
 
 func TestGroup(t *testing.T) {
 	// 接口型函数的用法，将一个函数强制转换成一个对象GetterFunc(func)
-	group := NewGroup("mkii", 20, GetterFunc(func(key string) (ByteView, error) {
+	group := NewGroup("mkii", 20, GetterFunc(func(key string) ([]byte, error) {
 		t.Log("Getter was called...............key:" + key)
 		if key == "k2" {
-			return ByteView{[]byte("getter value")}, nil
+			return[]byte("getter value"), nil
 		}
-		return ByteView{}, errors.New("not found")
+		return nil, errors.New("not found")
 	}))
 
 	group.current.Set("k1", ByteView{[]byte("mkii")})
