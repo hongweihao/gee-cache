@@ -53,3 +53,21 @@ func (pool *HttpPool) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write(byteView.ByteSlice())
 }
+
+type httpGetter struct {
+	baseUrl string
+}
+
+func NewHttpGetter(baseUrl string) PeerGetter {
+	if baseUrl == ""{
+		baseUrl = BasePath
+	}
+	return &httpGetter{baseUrl: baseUrl}
+}
+
+func (h httpGetter) Get(key string) ([]byte, error) {
+	
+
+
+}
+

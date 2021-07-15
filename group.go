@@ -17,11 +17,18 @@ var (
 	groups = make(map[string]*Group, 0)
 )
 
-func NewGroup(name string, maxBytes int64, getter Getter) *Group {
+func GetGroup(name string) *Group {
+	rw.RLock()
+	defer rw.RUnlock()
+	return groups[name]
+}
+
+func NewGroup(name string, nodes []string, maxBytes int64, getter Getter) *Group {
 	group := new(Group)
 	group.name = name
 	group.getter = getter
 	group.current = NewCache(maxBytes)
+	group.hashMap = NewMap(nil, DefaultReplicas)
 
 	rw.Lock()
 	defer rw.Unlock()
@@ -29,16 +36,12 @@ func NewGroup(name string, maxBytes int64, getter Getter) *Group {
 	return group
 }
 
-func GetGroup(name string) *Group {
-	rw.RLock()
-	defer rw.RUnlock()
-	return groups[name]
-}
-
+// 相当于一个节点
 type Group struct {
 	name    string
 	current *Cache
 	getter  Getter
+	hashMap *Map
 }
 
 // 先从current获取
@@ -63,4 +66,18 @@ func (group *Group) loadLocally(key string) (ByteView, error) {
 	bv := ByteView{v}
 	group.current.Set(key, bv)
 	return bv, nil
+}
+
+func (group *Group) PickPeer(key string) (PeerGetter, bool) {
+	group.hashMap.Get()
+
+}
+
+// loadFromRemotePeer
+// get node by key
+// get value from node
+func (group *Group) loadFromRemotePeer(key string) (ByteView, error) {
+
+
+
 }

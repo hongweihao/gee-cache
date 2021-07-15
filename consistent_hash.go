@@ -7,6 +7,8 @@ import (
 	"sort"
 )
 
+const DefaultReplicas = 3
+
 // hash 函数的形式
 type HashFunc func(data []byte) uint32
 

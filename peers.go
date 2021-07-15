@@ -3,9 +3,9 @@ package gee_cache
 // 抽象节点选择接口
 type PeerPicker interface {
 	// PickPeer
-	// @node 节点的标识
+	// @key
 	// @return PeerGetter key 应该从此节点获取
-	PickPeer(node string) (PeerGetter, bool)
+	PickPeer(key string) (PeerGetter, bool)
 }
 
 
@@ -30,7 +30,8 @@ type PeerGetter interface {
 // 5. get value from the current cache by key
 
 // 6. get value from the remote cache by key
-// 6.1 
+// 6.1 get node from consistent hash
+// 6.2 get value from node
 
 
 
