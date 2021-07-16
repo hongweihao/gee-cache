@@ -11,7 +11,7 @@ type PeerPicker interface {
 
 // 抽象远程数据获取接口
 type PeerGetter interface {
-	Get(key string) ([]byte, error)
+	Get(group, key string) ([]byte, error)
 }
 
 // lru cache

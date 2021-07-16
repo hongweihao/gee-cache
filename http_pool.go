@@ -1,15 +1,28 @@
 package gee_cache
 
 import (
+	"fmt"
+	"io/ioutil"
 	"net/http"
+	url "net/url"
 	"strings"
+	"sync"
 )
 
-const BasePath = "/_gee_cache/"
+const (
+	BasePath = "/_gee_cache/"
+	Replicas = 3
+)
+
 type HttpPool struct {
 	// 记录自己的host:port
-	self string
+	self     string
 	basePath string
+	m        sync.Mutex
+	// 一致性hash对象
+	hashMap *Map
+	// 每个实际节点的client对象
+	httpGetters map[string]*httpGetter
 }
 
 func NewHttpPool(self string) *HttpPool {
@@ -40,13 +53,13 @@ func (pool *HttpPool) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 	group := GetGroup(name)
 	if group == nil {
-		http.Error(w, "Not found the group: " + name, http.StatusNotFound)
+		http.Error(w, "Not found the group: "+name, http.StatusNotFound)
 		return
 	}
 
 	byteView, err := group.Get(key)
 	if err != nil {
-		http.Error(w, err.Error() + key, http.StatusInternalServerError)
+		http.Error(w, err.Error()+key, http.StatusInternalServerError)
 		return
 	}
 
@@ -59,15 +72,18 @@ type httpGetter struct {
 }
 
 func NewHttpGetter(baseUrl string) PeerGetter {
-	if baseUrl == ""{
-		baseUrl = BasePath
-	}
 	return &httpGetter{baseUrl: baseUrl}
 }
 
-func (h httpGetter) Get(key string) ([]byte, error) {
-	
-
-
+func (h httpGetter) Get(group, key string) ([]byte, error) {
+	remoteUrl := strings.Join([]string{h.baseUrl, url.QueryEscape(group), url.QueryEscape(key)}, "/")
+	resp, err := http.Get(remoteUrl)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("server return: %v", resp.StatusCode)
+	}
+	defer resp.Body.Close()
+	return ioutil.ReadAll(resp.Body)
 }
-

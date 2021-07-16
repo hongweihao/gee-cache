@@ -1,9 +1,7 @@
 package main
 
 import (
-	"errors"
-	cache "github.com/hongweihao/gee-cache"
-	"net/http"
+	"flag"
 )
 
 var db = map[string]interface{}{
@@ -11,14 +9,23 @@ var db = map[string]interface{}{
 }
 
 func main() {
-	self := "127.0.0.1:8089"
-	cache.NewGroup("user", 100, cache.GetterFunc(func(key string) ([]byte, error) {
-		if v, ok := db[key]; ok {
-			return []byte(v.(string)), nil
-		}
-		return nil, errors.New("not found")
-	}))
+	// 当前节点的端口
+	var port int
+	// 是否启动api服务
+	var api bool
 
-	pool := cache.NewHttpPool(self)
-	http.ListenAndServe(self, pool)
+	flag.IntVar(&port, "port", 8090, "server port")
+	flag.BoolVar(&api, "api", false, "start a api server?")
+
+	//节点列表
+	//当前节点
+	nodeMap := map[int]string{
+		8090: "localhost:8090",
+		8091: "localhost:8091",
+		8092: "localhost:8092",
+	}
+
+
+
+
 }
